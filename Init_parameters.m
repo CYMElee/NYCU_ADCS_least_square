@@ -32,6 +32,7 @@ ext_Torque = [0,0,0];
 Rq =[1;0;0;0];
 q0 =[1;0;0;0];
 %Initialization for function "Platform_Dynamics_Func"%
+omega_ab_init = [0,0,0]';
 omega_ab = [0,0,0]';
 omega_ab_prev = [0,0,0]';
 omega_dot_ab = [0,0,0]';

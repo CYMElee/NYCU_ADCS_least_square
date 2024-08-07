@@ -123,11 +123,40 @@ for i=1:length(t)
     record_R(i,:) =[r(3),r(2),r(1)];
  
     record_Omega(i,:) =[omega_ab(1),omega_ab(2),omega_ab(3)];
+   
 
 end
 
-    %% least square
-    
+ %% least square
+ %/******************************************/%
+ %/        Define angular rate matrix        /%
+ %/******************************************/%
+ Angular_rate_matrix = [omega_ab(1),0,0,omega_ab(2),omega_ab(3),0; ...
+                        0,omega_ab(2),0,omega_ab(1),0,omega_ab(3); ...
+                        0,0,omega_ab(3),0,omega_ab(1),omega_ab(3)];
+ %/*******************************************/%
+ %/           Skew-symmetric matrix           /%
+ %/*******************************************/%
+ [g_hat_map] = hat_map();
+ [omega_hat_map] = hat_map();
+
+ %/*************************************************/
+ %/                     Psi matrix                  /
+ %/*************************************************/
+
+ % Psi matrix is a 3N*9 matrix %
+ %(1):Integral the centripetal force %
+
+ %(2):Integral gravitational acceleration(skew-symmetric form) %
+
+
+ %(3):using (1)(2),obtain Psi matrix %
+ Psi =[omega_ab-omega_ab_init+ , ];
+ Psi_N =[Psi_N;Psi];
+
+
+
+ Z_N = 
 
 
 
