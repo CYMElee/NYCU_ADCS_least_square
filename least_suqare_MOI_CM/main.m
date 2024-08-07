@@ -8,21 +8,20 @@ Init_parameters;
 t =  [1:1:30000];
 dt = 0.001;
 
-
-
-
-
 % array for recoding the state (for plot)
 record_R = zeros(length(t),3);
 record_eR =zeros(length(t),3);
-record_theta3_hat = zeros(length(t),3);
-record_theta = zeros(length(t),3);
 record_Omega = zeros(length(t),3);
-record_icl = zeros(length(t),3);
 
-% ICL record 
-record_y = zeros(3,3,length(t));
-record_m_p = zeros(3,length(t));
+
+% Psi record
+record_centripetal_force = zeros(3,3,length(t));
+
+record_gravitational_acceleration = zeros(3,3,length(t));
+
+% M record
+
+record_M = zeros(length(t),3);
 
 %desire Attitude and desire Omega(platform bodyframe)
 r = [0,0,0];
@@ -39,9 +38,9 @@ for i=1:length(t)
 
      % let the trajectory compare with the Euler angle principle
      %Reference:https://ocw.mit.edu/courses/2-154-maneuvering-and-control-of-surface-and-underwater-vehicles-13-49-fall-2004/bc67e15b31b4f30aceabef2a66a6229d_lec1.pdf
-    [Od,Odd]=Get_Omega_Desire(rd,Od_raw,Odd_raw,i,dt);
-    Od = Od';
-    Odd = Odd';
+     [Od,Odd]=Get_Omega_Desire(rd,Od_raw,Odd_raw,i,dt);
+     Od = Od';
+     Odd = Odd';
    
 
     record_Rd(i,:) = rd;
@@ -65,19 +64,6 @@ for i=1:length(t)
     ext_Torque = cross(r_CM,m*g_body);
     ext_Torque = ext_Torque';
    
-
-
-    record_theta_hat(i,:) = Theta_hat';
-    record_theta(i,:) = Theta';
-    
-
-    record_m_p(:,i) = M_p*dt; 
-    record_y(:,:,i) = Y_cl*dt;
-    
-
-    M_p = -kr*eR - kw*eW - Y_j*Theta_hat;
-
-    M =[M_p;0];
 
     %% using A.B desire M to get R.W generate M
     omega_dot_mo = -(inv(H_w)/J_RW_testbed)*M;
@@ -125,7 +111,7 @@ for i=1:length(t)
     record_Omega(i,:) =[omega_ab(1),omega_ab(2),omega_ab(3)];
    
 
-end
+
 
  %% least square
  %/******************************************/%
@@ -137,9 +123,10 @@ end
  %/*******************************************/%
  %/           Skew-symmetric matrix           /%
  %/*******************************************/%
- [g_hat_map] = hat_map();
- [omega_hat_map] = hat_map();
-
+ [g_hat_map] = hat_map(g_body);
+ [omega_hat_map] = hat_map(omega_ab);
+ record_centripetal_force(:,:,i) =  omega_hat_map*Angular_rate_matrix;  
+ record_gravitational_acceleration(:,:,i) = g_hat_map;
  %/*************************************************/
  %/                     Psi matrix                  /
  %/*************************************************/
@@ -147,18 +134,34 @@ end
  % Psi matrix is a 3N*9 matrix %
  %(1):Integral the centripetal force %
 
+ for N= 1:length(i)
+    CF =+ (record_centripetal_force(:,:,N))*dt;
+ end
+
  %(2):Integral gravitational acceleration(skew-symmetric form) %
-
-
+ for N= 1:length(i)
+     GF =+ (record_gravitational_acceleration(:,:,N)*dt);    
+ end
  %(3):using (1)(2),obtain Psi matrix %
- Psi =[omega_ab-omega_ab_init+ , ];
- Psi_N =[Psi_N;Psi];
+ Psi_temp =[omega_ab-omega_ab_init+CF ,GF ];
+ Psi_N = [Psi_N;Psi_temp];
 
+ %/*************************/%
+ %/            Z_N          /%
+ %/*************************/%
 
+% (1): control input integral
+ for N= 1:length(i)
+     CI =+ (record_M(N,:)*dt); %CI is 1x3 matrix    
+ end
+ Z_N = [Z_N;CI']; %Z_N is 3Nx1 matrix, in here,CI should be transport.
 
- Z_N = 
+% using least square to estimate x
 
+ X_hat = Psi_N'*inv(Psi_N)*Psi_N'*Z_N;
 
+ 
+ end
 
 %% Plot
 

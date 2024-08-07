@@ -53,7 +53,8 @@ M = [0,0,0]';
 
 % Real values
 r_CM = [1,2,3];
-J = [6.2,6.2,5.7]'; 
+J = [6.2,6.2,5.7]';
+m_sys = 24; %units:kg
 %Estimate values
 r_CM_hat  = [0;0;0];
 J_hat = [0;0;0];
