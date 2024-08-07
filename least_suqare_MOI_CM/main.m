@@ -65,6 +65,19 @@ for i=1:length(t)
     ext_Torque = ext_Torque';
    
 
+    %% control input
+    
+    % if Euler angle's x,y belong(-5,555) we assign torque directly
+
+   
+
+    %else
+    if
+        M = 2*[sin(2*pi*i*dt/(5)),sin(2*pi*i*dt/(5)),sin(2*pi*i*dt/(5))];
+    else
+        M = -0.5*((alpha_hat)*+alpha_4*eye(3)*Gp + Gamma*(1-alpha_4)*eye(3))*alpha-Gr*     );
+    end
+
     %% using A.B desire M to get R.W generate M
     omega_dot_mo = -(inv(H_w)/J_RW_testbed)*M;
     omega_mo = omega_mo_prev + omega_dot_mo*dt;
