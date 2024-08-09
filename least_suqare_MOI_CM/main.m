@@ -5,12 +5,12 @@ clear;clc;
 addpath("../");
 Init_parameters;
 % Simulation time setting
-t =  [1:1:30000];
+t = [1:1:30000];
 dt = 0.001;
 
 % array for recoding the state (for plot)
 record_R = zeros(length(t),3);
-record_eR =zeros(length(t),3);
+
 record_Omega = zeros(length(t),3);
 
 
@@ -23,64 +23,39 @@ record_gravitational_acceleration = zeros(3,3,length(t));
 
 record_M = zeros(length(t),3);
 
-%desire Attitude and desire Omega(platform bodyframe)
-r = [0,0,0];
-
-
 
 for i=1:length(t)
- 
-    % set the desire Attitude,Angular velocity, Angular acceleration
-    rd = [0,0,sin(i*dt)];%xyz 
-    Od_raw = [0,0,cos(i*dt)];
-    Odd_raw = [0,0,-sin(i*dt)];
-
-
-     % let the trajectory compare with the Euler angle principle
-     %Reference:https://ocw.mit.edu/courses/2-154-maneuvering-and-control-of-surface-and-underwater-vehicles-13-49-fall-2004/bc67e15b31b4f30aceabef2a66a6229d_lec1.pdf
-     [Od,Odd]=Get_Omega_Desire(rd,Od_raw,Odd_raw,i,dt);
-     Od = Od';
-     Odd = Odd';
-   
-
-    record_Rd(i,:) = rd;
-    record_Od(i,:) = Od;
-    record_theta(i,:) = Theta.';
-    record_theta_hat(i,:) = Theta_hat.';
-    %% Get the tracking error for Attitude and Omega
-    rd = [rd(3),rd(2),rd(1)];
-    Rd = eul2rotm(rd);
-    R = eul2rotm(r);
-    [eR] = Attitude_Error(Rd,R);
-    [eW] = Omega_Error(omega_ab_prev,Od,R,Rd);
-    
-    record_eR(i,:) = [eR(1),eR(2),eR(3)];
-    record_eW(i,:) = [eW(1),eW(2),eW(3)];
-
 
     %% Trans Gravitational acceleration from inertial frame to body fix frame
-    g_body = g_inertial*[-sin(record_R(i-1,2)),sin(record_R(i-1,1))*cos(record_R(i-1,2)),cos(record_R(i-1,1))*cos(record_R(i-1,2))];
-    ext_Torque = cross(r_CM,m*g_body);
-    ext_Torque = ext_Torque';
+    if i==1
+        g_body = g*[-sin(0);sin(0)*cos(0);cos(0)*cos(0)];
+    else
+        g_body = g*[-sin(record_R(i-1,2));sin(record_R(i-1,1))*cos(record_R(i-1,2));cos(record_R(i-1,1))*cos(record_R(i-1,2))];
+    end
+        ext_Torque = cross(r_CM,m_sys*g_body);
+   
    
 
     %% control input
     
     % if Euler angle's x,y belong(-5,555) we assign torque directly
-
-    alpha = [sin(r(3)/2)*cos(r(2)/2)*cos(r(1)/2)-cos(r(3)/2)*sin(r(2)/2)*sin(r(1)/2), ...
-             cos(r(3)/2)*sin(r(2)/2)*cso(r(1)/2)+sin(r(3)/2)*cos(r(2)/2)*sin(r(1)/2), ...   
-             cos(r(3)/2)*cos(r(2)/2)*sin(r(1)/2)-sin(r(3)/2)*sin*(r(2)/2)*cos(r(1)/2)]';
+    a1 = sin(r(3)/2)*cos(r(2)/2)*cos(r(1)/2)-cos(r(3)/2)*sin(r(2)/2)*sin(r(1)/2);
+    a2 = cos(r(3)/2)*sin(r(2)/2)*cso(r(1)/2)+sin(r(3)/2)*cos(r(2)/2)*sin(r(1)/2);
+    a3 = cos(r(3)/2)*cos(r(2)/2)*sin(r(1)/2)-sin(r(3)/2)*sin*(r(2)/2)*cos(r(1)/2);
+    alpha = [a1; ...
+             a2; ...   
+             a3];
     alpha_4 = cos(r(3)/2)*cos(r(2)/2)*cos(r(1)/2)+sin(r(3)/2)*sin(r(2)/2)*sin(r(1)/2);
     [alpha_hat] = hat_map(alpha);
 
     %else
     if  abs(r(3)) < 0.0872 && abs(r(2)) < 0.0872
-        M = 2*[sin(2*pi*i*dt/(5)),sin(2*pi*i*dt/(5)),sin(2*pi*i*dt/(5))];
+        M_p = 2*[sin((2*pi*i*dt)/5);sin((2*pi*i*dt)/5);sin((2*pi*i*dt)/5)];
     else
-        M = -0.5*(((alpha_hat)+alpha_4*eye(3))*Gp + Gamma*(1-alpha_4)*eye(3))*alpha-Gr*omega_ab;
+        M_p = -0.5*(((alpha_hat)+alpha_4*eye(3))*Gp + Gamma*(1-alpha_4)*eye(3))*alpha-Gr*omega_ab;
     end
-
+    record_M = M_p';
+    M = [M_p;0];
     %% using A.B desire M to get R.W generate M
     omega_dot_mo = -(inv(H_w)/J_RW_testbed)*M;
     omega_mo = omega_mo_prev + omega_dot_mo*dt;
@@ -129,11 +104,10 @@ for i=1:length(t)
 
  %% least square
  %/******************************************/%
- %/        Define angular rate matrix        /%
+ %/  Define angular rate matrix( 3x6 matrix) /%
  %/******************************************/%
- Angular_rate_matrix = [omega_ab(1),0,0,omega_ab(2),omega_ab(3),0; ...
-                        0,omega_ab(2),0,omega_ab(1),0,omega_ab(3); ...
-                        0,0,omega_ab(3),0,omega_ab(1),omega_ab(3)];
+ [omega_N] = Angular_rate_matrix(omega_ab); % angular rate matrix for OMEGA(N)
+ [omega_init] = Angular_rate_matrix(omega_ab_init); % angular rate matrix for OMEGA(t0)
  %/*******************************************/%
  %/           Skew-symmetric matrix           /%
  %/*******************************************/%
@@ -157,127 +131,54 @@ for i=1:length(t)
      GF =+ (record_gravitational_acceleration(:,:,N)*dt);    
  end
  %(3):using (1)(2),obtain Psi matrix %
- Psi_temp =[omega_ab-omega_ab_init+CF ,GF ];
+ Psi_temp = [omega_N-omega_init+CF ,GF ];
  Psi_N = [Psi_N;Psi_temp];
+
+ % The pseudo-inverse of Psi_N
+
+ inv_Psi_N = inv(Psi_N'*Psi_N)*Psi_N';
 
  %/*************************/%
  %/            Z_N          /%
  %/*************************/%
 
 % (1): control input integral
- for N= 1:length(i)
-     CI =+ (record_M(N,:)*dt); %CI is 1x3 matrix    
- end
- Z_N = [Z_N;CI']; %Z_N is 3Nx1 matrix, in here,CI should be transport.
+if i == 1
+    Z_N = record_M(N,:)'*dt;
+else
+    for N= 1:length(i)
+        CI =+ (record_M(N,:)'*dt); %CI is 1x3 matrix    
+    end
+   Z_N = [Z_N;CI]; %Z_N is 3Nx1 matrix, in here,CI should be transport.
+end
+ 
+
 
 % using least square to estimate X
+ X_hat = Psi_N'*inv_Psi_N*Psi_N'*Z_N;
 
- X_hat = Psi_N'*inv(Psi_N)*Psi_N'*Z_N;
+ J_hat = X_hat(1:6,:);
+ r_CM_hat = X_hat(7:9,:);
 
- 
  end
 
 %% Plot
 
-%% Attitude Error 
-figure;
-ax1 = nexttile;
-plot(ax1, t, record_eR(1:length(record_eR),3)...
-          );
-title("Attitude Error(z)", FontSize=16);
-xlabel("Time(ms)", FontSize=13);
-ylabel("Euler Angle(rad)", FontSize=13);
-legend("z");
 
 %% Omega plot
 
-%
-
 figure;
-ax2 = nexttile;
-plot(ax2, ...  
-          t, record_Od(1:length(record_Od),3),...
-          t, record_Omega(1:length(record_Omega),3),'--'...
+ax1 = nexttile;
+plot(ax1, ...  
+          t, record_Omega(1:length(record_Omega),1),'--'...
           );
-title("Omgea", FontSize=16);
+title("Angular rate(rad/s)", FontSize=16);
 xlabel("Time(ms)", FontSize=13);
-ylabel("Euler Angle(rad/s)", FontSize=13);
-legend("zd","z");
-
-
-%% Attitude plot
-
-
-figure;
-ax3 = nexttile;
-plot(ax3,...
-          t, record_Rd(1:length(record_Rd),3),...
-          t, record_R(1:length(record_R),3),'--'...
-          );
-title("Attitude(Z)", FontSize=16);
-xlabel("Time(ms)", FontSize=13);
-ylabel("Euler Angle(rad)", FontSize=13);
-legend("zd","z");
-
-figure;
-ax4 = nexttile;
-plot(ax4,...
-          t, record_Rd(1:length(record_Rd),2),...
-          t, record_R(1:length(record_R),2),'--'...
-          );
-title("Attitude(Y)", FontSize=16);
-xlabel("Time(ms)", FontSize=13);
-ylabel("Euler Angle(rad)", FontSize=13);
-legend("yd","y");
+ylabel("omega(rad/s)", FontSize=13);
+legend("x");
 
 
 
-figure;
-ax5 = nexttile;
-plot(ax5,...
-          t, record_Rd(1:length(record_Rd),1),...
-          t, record_R(1:length(record_R),1),'--'...
-          );
-title("Attitude(X)", FontSize=16);
-xlabel("Time(ms)", FontSize=13);
-ylabel("Euler Angle(rad)", FontSize=13);
-legend("xd","x");
-
-
-
-%% Estimate 
-figure;
-ax6 = nexttile;
-plot(ax6, ...
-          t, record_theta(1:length(record_theta),3),...
-          t, record_theta_hat(1:length(record_theta_hat),3),"--"...
-          );
-title("Estimates of the Moment of Inertia(Izz)", FontSize=16);
-xlabel("Time(ms)", FontSize=13);
-ylabel("Moment of Inertia(kg*m^2)", FontSize=13);
-legend("Izz","Izz estimated");
-
-figure;
-ax7 = nexttile;
-plot(ax7, ...
-          t, record_theta(1:length(record_theta),2),...
-          t, record_theta_hat(1:length(record_theta_hat),2),"--"...
-          );
-title("Estimates of the Moment of Inertia(Iyy)", FontSize=16);
-xlabel("Time(ms)", FontSize=13);
-ylabel("Moment of Inertia(kg*m^2)", FontSize=13);
-legend("Iyy","Iyy estimated");
-
-figure;
-ax8 = nexttile;
-plot(ax8, ...
-          t, record_theta(1:length(record_theta),1),...
-          t, record_theta_hat(1:length(record_theta_hat),1),"--"...
-          );
-title("Estimates of the Moment of Inertia(Ixx)", FontSize=16);
-xlabel("Time(ms)", FontSize=13);
-ylabel("Moment of Inertia(kg*m^2)", FontSize=13);
-legend("Ixx","Ixx estimated");
 
 
 

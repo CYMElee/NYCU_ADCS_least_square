@@ -12,8 +12,7 @@ J_AB_testbed = [6.2 0 0;...
 
 %gravitational acceleration
 g = 9.81; %kg/m^2
-g_inertial = [0,0,g]';
-g_body = [0,0,0]';
+g_body = [0,0,0]'; %3x1 matrix
 % The direction consine matrix(DCM) from RWs to Body frame
 A_w = [1/2 -1/2 -1/2 1/2;
         1/2 1/2 -1/2 -1/2;
@@ -28,7 +27,7 @@ H_w = [1/2 -1/2 -1/2 1/2;
 
 % Init Condition %
 
-ext_Torque = [0,0,0];
+ext_Torque = [0;0;0];
 Rq =[1;0;0;0];
 q0 =[1;0;0;0];
 
@@ -50,10 +49,11 @@ r = [0,0,0];
 M_p = [0,0,0]';   
 M = [0,0,0]';
 
+Z_N = [0,0,0]';
 
 % Real values
-r_CM = [1,2,3];
-J = [6.2,6.2,5.7]';
+r_CM = [1;2;3];
+J = [6.2,6.2,5.7,0,0,0]';
 m_sys = 24; %units:kg
 %Estimate values
 r_CM_hat  = [0;0;0];
