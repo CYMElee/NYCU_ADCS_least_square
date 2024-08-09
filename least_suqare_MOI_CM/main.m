@@ -1,4 +1,4 @@
-  % "ADCS Testbed" Simlation Main file %
+% "ADCS Testbed" Simlation Main file %
 % Initialization 
 clear;clc;
 
@@ -54,7 +54,6 @@ for i=1:length(t)
     [eR] = Attitude_Error(Rd,R);
     [eW] = Omega_Error(omega_ab_prev,Od,R,Rd);
     
-    [o_b] = omega_bar(omega_ab_prev,R,Rd,Od,Odd);
     record_eR(i,:) = [eR(1),eR(2),eR(3)];
     record_eW(i,:) = [eW(1),eW(2),eW(3)];
 
@@ -69,20 +68,23 @@ for i=1:length(t)
     
     % if Euler angle's x,y belong(-5,555) we assign torque directly
 
-   
+    alpha = [sin(r(3)/2)*cos(r(2)/2)*cos(r(1)/2)-cos(r(3)/2)*sin(r(2)/2)*sin(r(1)/2), ...
+             cos(r(3)/2)*sin(r(2)/2)*cso(r(1)/2)+sin(r(3)/2)*cos(r(2)/2)*sin(r(1)/2), ...   
+             cos(r(3)/2)*cos(r(2)/2)*sin(r(1)/2)-sin(r(3)/2)*sin*(r(2)/2)*cos(r(1)/2)]';
+    alpha_4 = cos(r(3)/2)*cos(r(2)/2)*cos(r(1)/2)+sin(r(3)/2)*sin(r(2)/2)*sin(r(1)/2);
+    [alpha_hat] = hat_map(alpha);
 
     %else
-    if
+    if  abs(r(3)) < 0.0872 && abs(r(2)) < 0.0872
         M = 2*[sin(2*pi*i*dt/(5)),sin(2*pi*i*dt/(5)),sin(2*pi*i*dt/(5))];
     else
-        M = -0.5*((alpha_hat)*+alpha_4*eye(3)*Gp + Gamma*(1-alpha_4)*eye(3))*alpha-Gr*     );
+        M = -0.5*(((alpha_hat)+alpha_4*eye(3))*Gp + Gamma*(1-alpha_4)*eye(3))*alpha-Gr*omega_ab;
     end
 
     %% using A.B desire M to get R.W generate M
     omega_dot_mo = -(inv(H_w)/J_RW_testbed)*M;
     omega_mo = omega_mo_prev + omega_dot_mo*dt;
-    omega_dot_mo_prev = omega_dot_mo;
-    omega_mo_prev = omega_mo;
+    omega_mo_prev = omega_mo; 
 
     %% system dynamics
 
@@ -92,8 +94,7 @@ for i=1:length(t)
 
     omega_ab = omega_ab_prev + omega_dot_ab*dt;
     omega_ab_prev = omega_ab;
-    omega_dot_ab_prev = omega_dot_ab;
-
+   
     %% using dynamic get Attitude(Quaternion)
 
     omega_x =omega_ab(1);
@@ -148,7 +149,7 @@ for i=1:length(t)
  %(1):Integral the centripetal force %
 
  for N= 1:length(i)
-    CF =+ (record_centripetal_force(:,:,N))*dt;
+     CF =+ (record_centripetal_force(:,:,N))*dt;
  end
 
  %(2):Integral gravitational acceleration(skew-symmetric form) %
@@ -169,7 +170,7 @@ for i=1:length(t)
  end
  Z_N = [Z_N;CI']; %Z_N is 3Nx1 matrix, in here,CI should be transport.
 
-% using least square to estimate x
+% using least square to estimate X
 
  X_hat = Psi_N'*inv(Psi_N)*Psi_N'*Z_N;
 

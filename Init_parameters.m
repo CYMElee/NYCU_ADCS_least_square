@@ -31,19 +31,19 @@ H_w = [1/2 -1/2 -1/2 1/2;
 ext_Torque = [0,0,0];
 Rq =[1;0;0;0];
 q0 =[1;0;0;0];
-%Initialization for function "Platform_Dynamics_Func"%
-omega_ab_init = [0,0,0]';
+
+omega_ab_init = [0,0,0]'; % using for Psi matrix
 omega_ab = [0,0,0]';
 omega_ab_prev = [0,0,0]';
 omega_dot_ab = [0,0,0]';
-omega_dot_ab_prev =[0,0,0]';
+
 
 omega_mo = [0,0,0,0]';
 omega_dot_mo = [0,0,0,0]';
 omega_mo_prev = [0,0,0,0]';
-omega_dot_mo_prev = [0,0,0,0]';
 
-M_prev = [0,0,0,0]';
+
+
 r = [0,0,0]; 
 
 %control input
@@ -57,9 +57,9 @@ J = [6.2,6.2,5.7]';
 m_sys = 24; %units:kg
 %Estimate values
 r_CM_hat  = [0;0;0];
-J_hat = [0;0;0];
+J_hat = [0;0;0;0;0;0];
 
-% Gp Gr
+% Robust control control gains Gp Gr Gamma
 Gp = [25.2,0,0 ...
       0,25.2,0 ...
       0,0,28.8];
