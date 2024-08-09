@@ -6,9 +6,11 @@ clc; clear;
 % The wheel's moment of inertia include the roter and wheel.
 J_RW_testbed = 2.27373e-4; %(kg*m^2)
 % All of the body frame's moment of inertia
-J_AB_testbed = [6.2 0 0;...
-                0 6.2 0;...
-                0 0 5.7;];
+J_AB_testbed = [43.249 0.6530 0.0340;...
+                0 78.66 0.2628;...
+                0 0 98.06;];
+
+
 
 %gravitational acceleration
 g = 9.81; %kg/m^2
@@ -50,22 +52,24 @@ M_p = [0,0,0]';
 M = [0,0,0]';
 
 Z_N = [0,0,0]';
-
+GF =[0,0,0];
+CF =zeros(3,6); 
+CI = [0,0,0]';
 % Real values
-r_CM = [1;2;3];
-J = [6.2,6.2,5.7,0,0,0]';
+r_CM = [0.1722;0.0089;-0.1516];
+J = [43.249,78.66,98.06,0.6530,0.0340,0.2628]';
 m_sys = 24; %units:kg
 %Estimate values
 r_CM_hat  = [0;0;0];
 J_hat = [0;0;0;0;0;0];
 
 % Robust control control gains Gp Gr Gamma
-Gp = [25.2,0,0 ...
-      0,25.2,0 ...
+Gp = [25.2,0,0; ...
+      0,25.2,0; ...
       0,0,28.8];
 
-Gr = [20,0,0 ...
-      0,20,0 ...
+Gr = [20,0,0; ...
+      0,20,0; ...
       0,0,32];
 Gamma = 20;
 
