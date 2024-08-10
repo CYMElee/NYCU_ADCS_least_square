@@ -30,7 +30,7 @@ for i=1:length(t)
     %% Trans Gravitational acceleration from inertial frame to body fix frame
     if i == 1
         g_body = g*[-sin(0);sin(0)*cos(0);cos(0)*cos(0)];
-        %g_body = g*[-sin(0);0;0];
+     
     else
         g_body = g*[-sin(record_R(i-1,2));sin(record_R(i-1,1))*cos(record_R(i-1,2));cos(record_R(i-1,1))*cos(record_R(i-1,2))];
     end
@@ -52,13 +52,12 @@ for i=1:length(t)
 
     %else
     if  abs(r(3)) < 0.0872 && abs(r(2)) < 0.0872
-        %M_p = 2*[sin((2*pi*i*dt)/5);sin((2*pi*i*dt)/5);sin((2*pi*i*dt)/5)];
-        M_p = 2*[sin((2*pi*i*dt)/5);0;0];
+        M_p = 2*[sin((2*pi*i*dt)/5);sin((2*pi*i*dt)/5);sin((2*pi*i*dt)/5)];
+       
     else
         M_p = -0.5*(((alpha_hat)+alpha_4*eye(3))*Gp + Gamma*(1-alpha_4)*eye(3))*alpha-Gr*omega_ab;
-        
     end
-    record_M(i,:) = M_p';
+    %record_M(i,:) = M_p';
     M = [M_p;0];
     %% using A.B desire M to get R.W generate M
     omega_dot_mo = -(inv(H_w)/J_RW_testbed)*M;
@@ -67,15 +66,22 @@ for i=1:length(t)
 
     %% system dynamics
     % using R.C as momentum exchange devices.
+    record_M(i,:) = - A_w*J_RW_testbed*omega_dot_mo -cross(omega_ab_prev,A_w*J_RW_testbed*omega_mo);
     omega_dot_ab = inv(J_AB_testbed)*...
-                       (ext_Torque-((A_w*J_RW_testbed*omega_dot_mo)+...
-                        cross(omega_ab_prev, (A_w*J_RW_testbed*omega_mo+J_AB_testbed*omega_ab_prev))));
-
+                       (ext_Torque-(A_w*J_RW_testbed*omega_dot_mo)-...
+                        cross(omega_ab_prev,A_w*J_RW_testbed*omega_mo)- ...
+                        cross(omega_ab_prev, J_AB_testbed*omega_ab_prev));
     omega_ab = omega_ab_prev + omega_dot_ab*dt;
     omega_ab_prev = omega_ab;
-
+    
     % Assume Torque apply on platform directly
 
+    %omega_dot_ab = inv(J_AB_testbed)*...
+     %                  (ext_Torque+M_p-...
+      %                  cross(omega_ab_prev, J_AB_testbed*omega_ab_prev));
+
+   % omega_ab = omega_ab_prev + omega_dot_ab*dt;
+   % omega_ab_prev = omega_ab;
 
 
    

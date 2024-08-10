@@ -6,9 +6,9 @@ clc; clear;
 % The wheel's moment of inertia include the roter and wheel.
 J_RW_testbed = 2.27373e-4; %(kg*m^2)
 % All of the body frame's moment of inertia
-J_AB_testbed = [43.249 0.6530 0.0340;...
-                0 78.66 0.2628;...
-                0 0 98.06;];
+J_AB_testbed = [6.2 0 0;...
+                0 6.2 0;...
+                0 0 5.7;];
 
 
 
@@ -56,8 +56,8 @@ GF =[0,0,0];
 CF =zeros(3,6); 
 CI = [0,0,0]';
 % Real values
-r_CM = [0.1722;0.0089;-0.1516];
-J = [43.249,78.66,98.06,0.6530,0.0340,0.2628]';
+r_CM = [0.1722/24;0.0089/24;-0.1516/24];
+J = [6.2,6.2,5.7,0,0,0]';
 m_sys = 24; %units:kg
 %Estimate values
 r_CM_hat  = [0;0;0];
