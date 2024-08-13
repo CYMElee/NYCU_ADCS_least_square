@@ -14,6 +14,11 @@ record_GF = zeros(3,3,length(t));
 
 record_Omega = zeros(length(t),3);
 
+record_MOI = zeros(length(t),3); % a length(t)*3 vector using store estimated MOI
+record_POI = zeros(length(t),3); % a length(t)*3 vector using store estimated products of inertia
+
+record_CM = zeros(length(t),3); % a length(t)*3 vector using store estimated C.M offset
+
 
 % Psi record
 record_centripetal_force = zeros(3,6,length(t));
@@ -23,6 +28,7 @@ record_gravitational_acceleration = zeros(3,3,length(t));
 % M record
 
 record_M = zeros(length(t),3);
+record_Md = zeros(length(t),3);
 
 
 for i=1:length(t)
@@ -67,6 +73,7 @@ for i=1:length(t)
     %% system dynamics
     % using R.C as momentum exchange devices.
     record_M(i,:) = - A_w*J_RW_testbed*omega_dot_mo -cross(omega_ab_prev,A_w*J_RW_testbed*omega_mo);
+
     omega_dot_ab = inv(J_AB_testbed)*...
                        (ext_Torque-(A_w*J_RW_testbed*omega_dot_mo)-...
                         cross(omega_ab_prev,A_w*J_RW_testbed*omega_mo)- ...
@@ -74,14 +81,7 @@ for i=1:length(t)
     omega_ab = omega_ab_prev + omega_dot_ab*dt;
     omega_ab_prev = omega_ab;
     
-    % Assume Torque apply on platform directly
 
-    %omega_dot_ab = inv(J_AB_testbed)*...
-     %                  (ext_Torque+M_p-...
-      %                  cross(omega_ab_prev, J_AB_testbed*omega_ab_prev));
-
-   % omega_ab = omega_ab_prev + omega_dot_ab*dt;
-   % omega_ab_prev = omega_ab;
 
 
    
@@ -108,22 +108,11 @@ for i=1:length(t)
     end 
     q0 = Rq;
 
-     %get Attitude(Euler angle)
-     r = quat2eul(Rq.');
-    %% using dynamic get Attitude(Euler angle)
-   % if i == 1
-     %   r_init = [0;0;0];
-     %   [Euler_inv] = Euler_matrix(r_init);
-  %  else
-   %     [Euler_inv] = Euler_matrix(record_R(i-1,:));
-  %  end
-   % r_new = Euler_inv*omega_ab*dt;
-  %  r = r + r_new;
-    %record_R(i,:) =[r(1),r(2),r(3)];
+   
+    r = quat2eul(Rq.');
+
 
     
-
-
 
 
     record_R(i,:) =[r(3),r(2),r(1)];
@@ -202,24 +191,208 @@ CI = [0,0,0]';
  X_hat = inv(Psi_N'*Psi_N)*Psi_N'*Z_N;
 
  J_hat = X_hat(1:6,:);
+ 
  r_CM_hat = X_hat(7:9,:);
+
+ record_MOI(i,:) = X_hat(1:3,:);
+ record_POI(i,:) = X_hat(4:6,:);
+ record_CM(i,:) = r_CM_hat;
+
 
  end
 
 %% Plot
 
 
-%% Omega plot
+% Omega plot
 
 figure;
+
+tiledlayout(3, 1);
+
 ax1 = nexttile;
 plot(ax1, ...  
-          t, record_Omega(1:length(record_Omega),1),'--'...
+          t, record_Omega(1:length(record_Omega),1),'-'...
           );
-title("Angular rate(rad/s)", FontSize=16);
-xlabel("Time(ms)", FontSize=13);
-ylabel("omega(rad/s)", FontSize=13);
+%title("Roll", FontSize=14);
+xlabel("Time(10ms)", FontSize=13);
+ylabel("\omega_{sys,x}", FontSize=13);
 legend("x");
+
+ax2 = nexttile;
+plot(ax2, ...  
+          t, record_Omega(1:length(record_Omega),2),'-'...
+          );
+%title("Pitch", FontSize=14);
+xlabel("Time(10ms)", FontSize=13);
+ylabel("\omega_{sys,y}", FontSize=13);
+legend("y");
+
+
+ax3 = nexttile;
+
+plot(ax3, ...  
+          t, record_Omega(1:length(record_Omega),3),'-'...
+          );
+%title("Yaw", FontSize=14);
+xlabel("Time(10ms)", FontSize=13);
+ylabel("\omega_{sys,z}", FontSize=13);
+legend("z");
+
+sgtitle('Platform Angular Rates (rad/sec)', 'FontSize', 16);
+
+
+% Attitude plot
+
+figure;
+
+tiledlayout(3, 1);
+
+ax4 = nexttile;
+plot(ax4, ...  
+          t, record_R(1:length(record_R),1),'-'...
+          );
+%title("Roll", FontSize=14);
+xlabel("Time(10ms)", FontSize=13);
+ylabel("\phi", FontSize=13);
+legend("x");
+
+ax5 = nexttile;
+plot(ax5, ...  
+          t, record_R(1:length(record_R),2),'-'...
+          );
+%title("Pitch", FontSize=14);
+xlabel("Time(10ms)", FontSize=13);
+ylabel("\theta", FontSize=13);
+legend("y");
+
+
+ax6 = nexttile;
+
+plot(ax6, ...  
+          t, record_R(1:length(record_R),3),'-'...
+          );
+%title("Yaw", FontSize=14);
+xlabel("Time(10ms)", FontSize=13);
+ylabel("\psi", FontSize=13);
+legend("z");
+
+sgtitle('Platform Attitude (rad)', 'FontSize', 16);
+
+% Mass times C.M offset(kg*m)
+
+figure;
+
+tiledlayout(3, 1);
+
+ax7 = nexttile;
+plot(ax7, ...  
+          t, record_CM(1:length(record_CM),1),'-'...
+          );
+%title("Roll", FontSize=14);
+xlabel("Time(10ms)", FontSize=13);
+ylabel("$mr_{x}$", FontSize=13);
+legend("x");
+
+ax8 = nexttile;
+plot(ax8, ...  
+          t, record_CM(1:length(record_CM),2),'-'...
+          );
+%title("Pitch", FontSize=14);
+xlabel("Time(10ms)", FontSize=13);
+ylabel("$mr_{y}$", FontSize=13);
+legend("y");
+
+
+ax9 = nexttile;
+
+plot(ax9, ...  
+          t, record_CM(1:length(record_CM),3),'-'...
+          );
+%title("Yaw", FontSize=14);
+xlabel("Time(10ms)", FontSize=13);
+ylabel("$mr_{z}$", FontSize=13);
+legend("z");
+
+sgtitle('Mass times C.M offset(kg*m)', 'FontSize', 16);
+
+% M.O.I
+figure;
+
+tiledlayout(3, 1);
+
+ax10 = nexttile;
+plot(ax10, ...  
+          t, record_MOI(1:length(record_MOI),1),'-'...
+          );
+
+xlabel("Time(10ms)", FontSize=13);
+ylabel("$I_{x}$", FontSize=13);
+legend("x");
+
+ax11 = nexttile;
+plot(ax11, ...  
+          t, record_MOI(1:length(record_MOI),2),'-'...
+          );
+
+xlabel("Time(10ms)", FontSize=13);
+ylabel("$I_{y}$", FontSize=13);
+legend("y");
+
+
+ax12 = nexttile;
+
+plot(ax12, ...  
+          t, record_MOI(1:length(record_MOI),3),'-'...
+          );
+
+xlabel("Time(10ms)", FontSize=13);
+ylabel("$I_{z}$", FontSize=13);
+legend("z");
+
+sgtitle('Moment of Inertia(kg*m^2)', 'FontSize', 16);
+
+
+
+
+
+
+% P.O.I
+figure;
+
+tiledlayout(3, 1);
+
+ax13 = nexttile;
+plot(ax13, ...  
+          t, record_POI(1:length(record_POI),1),'-'...
+          );
+
+xlabel("Time(10ms)", FontSize=13);
+ylabel("$I_{xy}$", FontSize=13);
+legend("x");
+
+ax14 = nexttile;
+plot(ax14, ...  
+          t, record_POI(1:length(record_POI),2),'-'...
+          );
+
+xlabel("Time(10ms)", FontSize=13);
+ylabel("$I_{xz}$", FontSize=13);
+legend("y");
+
+
+ax15 = nexttile;
+
+plot(ax15, ...  
+          t, record_POI(1:length(record_POI),3),'-'...
+          );
+
+xlabel("Time(10ms)", FontSize=13);
+ylabel("$I_{yz}$", FontSize=13);
+legend("z");
+
+sgtitle('Products of Inertia(kg*m^2)', 'FontSize', 16);
+
 
 
 
