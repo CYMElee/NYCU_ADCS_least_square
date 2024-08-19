@@ -14,10 +14,18 @@ record_GF = zeros(3,3,length(t));
 
 record_Omega = zeros(length(t),3);
 
+record_MOI_TRUE = zeros(length(t),3);
 record_MOI = zeros(length(t),3); % a length(t)*3 vector using store estimated MOI
+
+record_POI_TRUE = zeros(length(t),3);
 record_POI = zeros(length(t),3); % a length(t)*3 vector using store estimated products of inertia
 
+record_CM_TRUE = zeros(length(t),3);
 record_CM = zeros(length(t),3); % a length(t)*3 vector using store estimated C.M offset
+
+% torque comp
+record_TOR_TRUE = zeros(length(t),3);
+record_TOR_CMD = zeros(length(t),3);
 
 
 % Psi record
@@ -64,6 +72,7 @@ for i=1:length(t)
         M_p = -0.5*(((alpha_hat)+alpha_4*eye(3))*Gp + Gamma*(1-alpha_4)*eye(3))*alpha-Gr*omega_ab;
     end
     %record_M(i,:) = M_p';
+    record_TOR_CMD(i,:)= M_p';
     M = [M_p;0];
     %% using A.B desire M to get R.W generate M
     omega_dot_mo = -(inv(H_w)/J_RW_testbed)*M;
@@ -73,7 +82,7 @@ for i=1:length(t)
     %% system dynamics
     % using R.C as momentum exchange devices.
     record_M(i,:) = - A_w*J_RW_testbed*omega_dot_mo -cross(omega_ab_prev,A_w*J_RW_testbed*omega_mo);
-
+    record_TOR_TRUE(i,:) =- A_w*J_RW_testbed*omega_dot_mo -cross(omega_ab_prev,A_w*J_RW_testbed*omega_mo);
     omega_dot_ab = inv(J_AB_testbed)*...
                        (ext_Torque-(A_w*J_RW_testbed*omega_dot_mo)-...
                         cross(omega_ab_prev,A_w*J_RW_testbed*omega_mo)- ...
@@ -197,7 +206,9 @@ CI = [0,0,0]';
  record_MOI(i,:) = X_hat(1:3,:);
  record_POI(i,:) = X_hat(4:6,:);
  record_CM(i,:) = r_CM_hat;
-
+ record_MOI_TRUE(i,:) =J_MOI;
+ record_POI_TRUE(i,:) = J_POI;
+ record_CM_TRUE(i,:) = r_CMXM;
 
  end
 
@@ -254,7 +265,7 @@ plot(ax4, ...
           );
 %title("Roll", FontSize=14);
 xlabel("Time(10ms)", FontSize=13);
-ylabel("\phi", FontSize=13);
+ylabel("\psi", FontSize=13);
 legend("x");
 
 ax5 = nexttile;
@@ -274,7 +285,7 @@ plot(ax6, ...
           );
 %title("Yaw", FontSize=14);
 xlabel("Time(10ms)", FontSize=13);
-ylabel("\psi", FontSize=13);
+ylabel("\phi", FontSize=13);
 legend("z");
 
 sgtitle('Platform Attitude (rad)', 'FontSize', 16);
@@ -286,33 +297,27 @@ figure;
 tiledlayout(3, 1);
 
 ax7 = nexttile;
-plot(ax7, ...  
-          t, record_CM(1:length(record_CM),1),'-'...
-          );
+plot(ax7, t, record_CM(1:length(record_CM),1),'--',t, record_CM_TRUE(1:length(record_CM_TRUE),1),'-');
 %title("Roll", FontSize=14);
 xlabel("Time(10ms)", FontSize=13);
-ylabel("$mr_{x}$", FontSize=13);
-legend("x");
+ylabel("mr_{x}", FontSize=13);
+legend({'$\hat{mr_{x}}$', '$mr_{x}$'}, 'Interpreter', 'latex');
 
 ax8 = nexttile;
-plot(ax8, ...  
-          t, record_CM(1:length(record_CM),2),'-'...
-          );
+plot(ax8, t, record_CM(1:length(record_CM),2),'--',t, record_CM_TRUE(1:length(record_CM_TRUE),2),'-');
 %title("Pitch", FontSize=14);
 xlabel("Time(10ms)", FontSize=13);
-ylabel("$mr_{y}$", FontSize=13);
-legend("y");
+ylabel("mr_{y}", FontSize=13);
+legend({'$\hat{mr_{y}}$', '$mr_{y}$'}, 'Interpreter', 'latex');
 
 
 ax9 = nexttile;
 
-plot(ax9, ...  
-          t, record_CM(1:length(record_CM),3),'-'...
-          );
+plot(ax9, t, record_CM(1:length(record_CM),3),'--',t, record_CM_TRUE(1:length(record_CM_TRUE),3),'-');
 %title("Yaw", FontSize=14);
 xlabel("Time(10ms)", FontSize=13);
-ylabel("$mr_{z}$", FontSize=13);
-legend("z");
+ylabel("mr_{z}", FontSize=13);
+legend({'$\hat{mr_{z}}$', '$mr_{z}$'}, 'Interpreter', 'latex');
 
 sgtitle('Mass times C.M offset(kg*m)', 'FontSize', 16);
 
@@ -322,33 +327,26 @@ figure;
 tiledlayout(3, 1);
 
 ax10 = nexttile;
-plot(ax10, ...  
-          t, record_MOI(1:length(record_MOI),1),'-'...
-          );
+plot(ax10, t, record_MOI(1:length(record_MOI),1),'--',t, record_MOI_TRUE(1:length(record_MOI_TRUE),1),'-');
 
 xlabel("Time(10ms)", FontSize=13);
-ylabel("$I_{x}$", FontSize=13);
-legend("x");
+ylabel("J_{x}", FontSize=13);
+legend({'$\hat{J_{x}}$', '$J_{x}$'}, 'Interpreter', 'latex');
 
 ax11 = nexttile;
-plot(ax11, ...  
-          t, record_MOI(1:length(record_MOI),2),'-'...
-          );
-
+plot(ax11, t, record_MOI(1:length(record_MOI),2),'--',t, record_MOI_TRUE(1:length(record_MOI_TRUE),2),'-');
 xlabel("Time(10ms)", FontSize=13);
-ylabel("$I_{y}$", FontSize=13);
-legend("y");
+ylabel("J_{y}", FontSize=13);
+legend({'$\hat{J_{y}}$', '$J_{y}$'}, 'Interpreter', 'latex');
 
 
 ax12 = nexttile;
 
-plot(ax12, ...  
-          t, record_MOI(1:length(record_MOI),3),'-'...
-          );
+plot(ax12, t, record_MOI(1:length(record_MOI),3),'--',t, record_MOI_TRUE(1:length(record_MOI_TRUE),3),'-');
 
 xlabel("Time(10ms)", FontSize=13);
-ylabel("$I_{z}$", FontSize=13);
-legend("z");
+ylabel("J_{z}", FontSize=13);
+legend({'$\hat{J_{z}}$', '$J_{z}$'}, 'Interpreter', 'latex');
 
 sgtitle('Moment of Inertia(kg*m^2)', 'FontSize', 16);
 
@@ -363,35 +361,64 @@ figure;
 tiledlayout(3, 1);
 
 ax13 = nexttile;
-plot(ax13, ...  
-          t, record_POI(1:length(record_POI),1),'-'...
-          );
-
+plot(ax13, t, record_POI(1:length(record_POI),1),'--',t, record_POI_TRUE(1:length(record_POI_TRUE),1),'-');
 xlabel("Time(10ms)", FontSize=13);
-ylabel("$I_{xy}$", FontSize=13);
-legend("x");
+ylabel("J_{xy}", FontSize=13);
+legend({'$\hat{J_{xy}}$', '$J_{xy}$'}, 'Interpreter', 'latex');
 
 ax14 = nexttile;
-plot(ax14, ...  
-          t, record_POI(1:length(record_POI),2),'-'...
-          );
+plot(ax14, t, record_POI(1:length(record_POI),2),'--',t, record_POI_TRUE(1:length(record_POI_TRUE),2),'-');
 
 xlabel("Time(10ms)", FontSize=13);
-ylabel("$I_{xz}$", FontSize=13);
-legend("y");
+ylabel("J_{xz}", FontSize=13);
+legend({'$\hat{J_{xz}}$', '$J_{xz}$'}, 'Interpreter', 'latex');
 
 
 ax15 = nexttile;
 
-plot(ax15, ...  
-          t, record_POI(1:length(record_POI),3),'-'...
-          );
+plot(ax15, t, record_POI(1:length(record_POI),3),'--',t, record_POI_TRUE(1:length(record_POI_TRUE),3),'-');
 
 xlabel("Time(10ms)", FontSize=13);
-ylabel("$I_{yz}$", FontSize=13);
-legend("z");
+ylabel("J_{yz}", FontSize=13);
+legend({'$\hat{J_{yz}}$', '$J_{yz}$'}, 'Interpreter', 'latex');
 
 sgtitle('Products of Inertia(kg*m^2)', 'FontSize', 16);
+
+
+
+% Torque vs Torque_cmd
+figure;
+ax16 = nexttile;
+
+plot(ax16, t, record_TOR_TRUE(1:length(record_TOR_TRUE),1),'--',t, record_TOR_CMD(1:length(record_TOR_CMD),1),'-');
+
+xlabel("Time(10ms)", FontSize=13);
+ylabel("M_{x}", FontSize=13);
+legend({'M_{x}_truth', 'M_{x}_command'}, 'Interpreter', 'latex');
+
+sgtitle('Torque Generate by R.W(x)', 'FontSize', 16);
+
+
+
+ax17 = nexttile;
+
+plot(ax17, t, record_TOR_TRUE(1:length(record_TOR_TRUE),2),'--',t, record_TOR_CMD(1:length(record_TOR_CMD),2),'-');
+
+xlabel("Time(10ms)", FontSize=13);
+ylabel("M_{y}", FontSize=13);
+legend({'M_{y}_truth', 'M_{y}_command'}, 'Interpreter', 'latex');
+sgtitle('Torque Generate by R.W(y)', 'FontSize', 16);
+
+
+ax18 = nexttile;
+
+plot(ax18, t, record_TOR_TRUE(1:length(record_TOR_TRUE),3),'--',t, record_TOR_CMD(1:length(record_TOR_CMD),3),'-');
+
+xlabel("Time(10ms)", FontSize=13);
+ylabel("M_{z}", FontSize=13);
+legend({'M_{z}_truth', 'M_{z}_command'}, 'Interpreter', 'latex');
+sgtitle('Torque Generate by R.W(z)', 'FontSize', 16);
+
 
 
 
