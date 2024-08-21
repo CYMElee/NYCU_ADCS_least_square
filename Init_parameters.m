@@ -56,11 +56,12 @@ GF =[0,0,0];
 CF =zeros(3,6); 
 CI = [0,0,0]';
 % Real values
+m_sys = 60.56; %units:kg
 r_CM = [0.001;0.002;0.003];
-r_CMXM = [60.56*0.001,60.56*0.002,60.56*0.003];
+r_CMXM = m_sys*r_CM ;
 J_MOI = [5.47,5.47,5.47]';
 J_POI = [0,0,0]';
-m_sys = 60.56; %units:kg
+
 %Estimate values
 r_CM_hat  = [0;0;0];
 J_hat = [0;0;0;0;0;0];
@@ -75,6 +76,9 @@ Gr = [20,0,0; ...
       0,0,32];
 
 Gamma = 20;
+
+
+
 
 
 

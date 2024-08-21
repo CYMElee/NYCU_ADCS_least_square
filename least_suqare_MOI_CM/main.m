@@ -5,7 +5,7 @@ clear;clc;
 addpath("../");
 Init_parameters;
 % Simulation time setting
-t = [1:1:3000];
+t = [1:1:500];
 dt = 0.01;
 
 % array for recoding the state (for plot)
@@ -54,7 +54,7 @@ for i=1:length(t)
 
     %% control input
     
-    % if Euler angle's x,y belong(-5,555) we assign torque directly
+    % if Euler angle's x,y belong(-5,5) we assign torque directly
     a1 = sin(r(3)/2)*cos(r(2)/2)*cos(r(1)/2)-cos(r(3)/2)*sin(r(2)/2)*sin(r(1)/2);
     a2 = cos(r(3)/2)*sin(r(2)/2)*cos(r(1)/2)+sin(r(3)/2)*cos(r(2)/2)*sin(r(1)/2);
     a3 = cos(r(3)/2)*cos(r(2)/2)*sin(r(1)/2)-sin(r(3)/2)*sin(r(2)/2)*cos(r(1)/2);
@@ -66,7 +66,7 @@ for i=1:length(t)
 
     %else
     if  abs(r(3)) < 0.0872 && abs(r(2)) < 0.0872
-        M_p = 2*[sin((2*pi*i*dt)/5);sin((2*pi*i*dt)/5);sin((2*pi*i*dt)/5)];
+        M_p = 2*[sin((2*pi*i*dt)/5);cos((2*pi*i*dt)/5);-sin((2*pi*i*dt)/5)];
        
     else
         M_p = -0.5*(((alpha_hat)+alpha_4*eye(3))*Gp + Gamma*(1-alpha_4)*eye(3))*alpha-Gr*omega_ab;
@@ -87,6 +87,7 @@ for i=1:length(t)
                        (ext_Torque-(A_w*J_RW_testbed*omega_dot_mo)-...
                         cross(omega_ab_prev,A_w*J_RW_testbed*omega_mo)- ...
                         cross(omega_ab_prev, J_AB_testbed*omega_ab_prev));
+
     omega_ab = omega_ab_prev + omega_dot_ab*dt;
     omega_ab_prev = omega_ab;
     
@@ -393,36 +394,44 @@ ax16 = nexttile;
 plot(ax16, t, record_TOR_TRUE(1:length(record_TOR_TRUE),1),'--',t, record_TOR_CMD(1:length(record_TOR_CMD),1),'-');
 
 xlabel("Time(10ms)", FontSize=13);
-ylabel("M_{x}", FontSize=13);
-legend({'M_{x}_truth', 'M_{x}_command'}, 'Interpreter', 'latex');
-
+ylabel("Mx", FontSize=13);
+legend({'Mx_truth', 'Mx_command'}, 'Interpreter', 'latex');
 sgtitle('Torque Generate by R.W(x)', 'FontSize', 16);
 
-
+figure;
 
 ax17 = nexttile;
-
 plot(ax17, t, record_TOR_TRUE(1:length(record_TOR_TRUE),2),'--',t, record_TOR_CMD(1:length(record_TOR_CMD),2),'-');
-
 xlabel("Time(10ms)", FontSize=13);
-ylabel("M_{y}", FontSize=13);
-legend({'M_{y}_truth', 'M_{y}_command'}, 'Interpreter', 'latex');
+ylabel("My", FontSize=13);
+legend({'My_truth', 'My_command'}, 'Interpreter', 'latex');
 sgtitle('Torque Generate by R.W(y)', 'FontSize', 16);
 
-
+figure;
 ax18 = nexttile;
-
 plot(ax18, t, record_TOR_TRUE(1:length(record_TOR_TRUE),3),'--',t, record_TOR_CMD(1:length(record_TOR_CMD),3),'-');
-
 xlabel("Time(10ms)", FontSize=13);
-ylabel("M_{z}", FontSize=13);
-legend({'M_{z}_truth', 'M_{z}_command'}, 'Interpreter', 'latex');
+ylabel("Mz", FontSize=13);
+legend({'Mz_truth', 'Mz_command'}, 'Interpreter', 'latex');
 sgtitle('Torque Generate by R.W(z)', 'FontSize', 16);
 
 
+%     %error
 
 
+Percent_error_MOI_x =100*((record_MOI_TRUE(length(record_MOI_TRUE),1)-record_MOI(length(record_MOI),1))/record_MOI_TRUE(length(record_MOI_TRUE),1));
+Percent_error_MOI_y =100*((record_MOI_TRUE(length(record_MOI_TRUE),2)-record_MOI(length(record_MOI),2))/record_MOI_TRUE(length(record_MOI_TRUE),2));
+Percent_error_MOI_z =100*((record_MOI_TRUE(length(record_MOI_TRUE),3)-record_MOI(length(record_MOI),3))/record_MOI_TRUE(length(record_MOI_TRUE),3));
 
+
+Percent_error_POI_x = 100*((record_POI_TRUE(length(record_POI_TRUE),1)-record_POI(length(record_POI),1))/record_POI_TRUE(length(record_POI_TRUE),1));
+Percent_error_POI_y = 100*((record_POI_TRUE(length(record_POI_TRUE),2)-record_POI(length(record_POI),2))/record_POI_TRUE(length(record_POI_TRUE),2));
+Percent_error_POI_z = 100*((record_POI_TRUE(length(record_POI_TRUE),3)-record_POI(length(record_POI),3))/record_POI_TRUE(length(record_POI_TRUE),3));
+
+
+Percent_error_CM_x = 100*((record_CM_TRUE(length(record_CM_TRUE),1)-record_CM(length(record_CM),1))/record_CM_TRUE(length(record_CM),1));
+Percent_error_CM_y = 100*((record_CM_TRUE(length(record_CM_TRUE),2)-record_CM(length(record_CM),2))/record_CM_TRUE(length(record_CM),2));
+Percent_error_CM_z = 100*((record_CM_TRUE(length(record_CM_TRUE),3)-record_CM(length(record_CM),3))/record_CM_TRUE(length(record_CM),3));
 
 
 
