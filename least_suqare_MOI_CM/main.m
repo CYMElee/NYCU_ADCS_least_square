@@ -5,7 +5,7 @@ clear;clc;
 addpath("../");
 Init_parameters;
 % Simulation time setting
-t = [1:1:500];
+t = [1:1:3000];
 dt = 0.01;
 
 % array for recoding the state (for plot)
@@ -33,7 +33,10 @@ record_centripetal_force = zeros(3,6,length(t));
 
 record_gravitational_acceleration = zeros(3,3,length(t));
 
-% M record
+% M record replace by 2 turn 
+record_Coriolis = zeros(length(t),3);
+record_m = zeros(length(t),3);
+
 
 record_M = zeros(length(t),3);
 record_Md = zeros(length(t),3);
@@ -77,11 +80,15 @@ for i=1:length(t)
     %% using A.B desire M to get R.W generate M
     omega_dot_mo = -(inv(H_w)/J_RW_testbed)*M;
     omega_mo = omega_mo_prev + omega_dot_mo*dt;
+    record_m(i,:) = -(A_w*J_RW_testbed*(omega_mo-omega_mo_prev ));
     omega_mo_prev = omega_mo; 
 
     %% system dynamics
     % using R.C as momentum exchange devices.
     record_M(i,:) = - A_w*J_RW_testbed*omega_dot_mo -cross(omega_ab_prev,A_w*J_RW_testbed*omega_mo);
+    record_Coriolis(i,:) = -cross(omega_ab_prev,A_w*J_RW_testbed*omega_mo);
+
+
     record_TOR_TRUE(i,:) =- A_w*J_RW_testbed*omega_dot_mo -cross(omega_ab_prev,A_w*J_RW_testbed*omega_mo);
     omega_dot_ab = inv(J_AB_testbed)*...
                        (ext_Torque-(A_w*J_RW_testbed*omega_dot_mo)-...
@@ -182,16 +189,35 @@ for i=1:length(t)
  %/            Z_N          /%
  %/*************************/%
 
-% (1): control input integral
+% (1)-a: control input integral-> if we can get the motor angular
+% accelerate
+%if i == 1
+%    Z_N = record_M(1,:)'*dt;
+%else
+%    for N= 1:i
+%        CI_temp = (record_M(N,:)'*dt); %CI is 3X1 matrix  
+%        CI = CI + CI_temp;
+ %   end
+ %  Z_N = [Z_N;CI]; %Z_N is 3Nx1 matrix, in here,CI should be transport.
+%end
+
+%(1)-b control input integral-> if we can't get the motor angular
+% accelerate
 if i == 1
-    Z_N = record_M(N,:)'*dt;
+    Z_N = (record_m(1,:)'+(record_Coriolis(1,:)'*dt));
 else
     for N= 1:i
-        CI_temp = (record_M(N,:)'*dt); %CI is 3X1 matrix  
+        CI_temp = (record_m(N,:)'+(record_Coriolis(N,:)'*dt)); %CI is 3X1 matrix  
         CI = CI + CI_temp;
     end
+    
+
    Z_N = [Z_N;CI]; %Z_N is 3Nx1 matrix, in here,CI should be transport.
 end
+
+
+
+
 
 GF = [0,0,0];
 CF = zeros(3,6);
