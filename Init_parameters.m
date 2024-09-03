@@ -40,6 +40,7 @@ omega_dot_ab = [0,0,0]';
 
 
 omega_mo = [0,0,0,0]';
+omega_mo_init = [0,0,0,0]';
 omega_dot_mo = [0,0,0,0]';
 omega_mo_prev = [0,0,0,0]';
 
