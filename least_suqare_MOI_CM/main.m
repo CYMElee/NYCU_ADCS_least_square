@@ -5,7 +5,7 @@ clear;clc;
 addpath("../");
 Init_parameters;
 % Simulation time setting
-t = [1:1:3000];
+t = [1:1:500];
 dt = 0.01;
 
 % array for recoding the state (for plot)
