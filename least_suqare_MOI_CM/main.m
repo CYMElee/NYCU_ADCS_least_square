@@ -199,9 +199,12 @@ CI = [0,0,0]';
 
 % using least square to estimate X
 
-if i < 3
+if i == 1
  X_hat = inv(Psi_N'*Psi_N)*Psi_N'*Z_N;
  X_hat_prev = X_hat;
+ x_init = X_hat;
+ z_init = Z_N;
+ psi_init = Psi_N;
 else
   % Gain Calculation   
   K_N =  P_N_prev*Psi_N'*inv(eye(3)+Psi_N*P_N_prev*Psi_N');
@@ -406,7 +409,7 @@ plot(ax16, t, record_TOR_TRUE(1:length(record_TOR_TRUE),1),'--',t, record_TOR_CM
 
 xlabel("Time(10ms)", FontSize=13);
 ylabel("Mx", FontSize=13);
-legend({'Mx_truth', 'Mx_command'}, 'Interpreter', 'latex');
+legend({'$Mx\_truth$', '$Mx\_command$'}, 'Interpreter', 'latex');
 sgtitle('Torque Generate by R.W(x)', 'FontSize', 16);
 
 figure;
@@ -415,7 +418,7 @@ ax17 = nexttile;
 plot(ax17, t, record_TOR_TRUE(1:length(record_TOR_TRUE),2),'--',t, record_TOR_CMD(1:length(record_TOR_CMD),2),'-');
 xlabel("Time(10ms)", FontSize=13);
 ylabel("My", FontSize=13);
-legend({'My_truth', 'My_command'}, 'Interpreter', 'latex');
+legend({'$My\_truth$', '$My\_command$'}, 'Interpreter', 'latex');
 sgtitle('Torque Generate by R.W(y)', 'FontSize', 16);
 
 figure;
@@ -423,7 +426,7 @@ ax18 = nexttile;
 plot(ax18, t, record_TOR_TRUE(1:length(record_TOR_TRUE),3),'--',t, record_TOR_CMD(1:length(record_TOR_CMD),3),'-');
 xlabel("Time(10ms)", FontSize=13);
 ylabel("Mz", FontSize=13);
-legend({'Mz_truth', 'Mz_command'}, 'Interpreter', 'latex');
+legend({'$Mz\_truth$', '$Mz\_command$'}, 'Interpreter', 'latex');
 sgtitle('Torque Generate by R.W(z)', 'FontSize', 16);
 
 
