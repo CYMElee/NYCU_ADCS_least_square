@@ -79,6 +79,16 @@ Gr = [10,0,0; ...
 Gamma = 20;
 
 
+% param for RLS
+
+%covenance matrix
+
+P_init = 10000*eye(9);
+P_N_prev =  10000*eye(9);
+Lambda = 10000;
+
+
+
 
 
 

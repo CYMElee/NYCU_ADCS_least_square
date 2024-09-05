@@ -10,7 +10,6 @@ dt = 0.01;
 
 % array for recoding the state (for plot)
 record_R = zeros(length(t),3);
-record_GF = zeros(3,3,length(t));
 
 record_Omega = zeros(length(t),3);
 
@@ -171,38 +170,15 @@ for i=1:length(t)
  end
  
  %(3):using (1)(2),obtain Psi matrix %
- if i == 1
-    Psi_N = [omega_N-omega_init+CF ,GF ];
- else
-     Psi_temp = [omega_N-omega_init+CF ,GF ];
-     Psi_N = [Psi_N;Psi_temp];
- end
- record_GF(:,:,i) = GF;
+ Psi_N = [omega_N-omega_init+CF ,GF ];
 
 
-
-
- 
 
 
  %/*************************/%
  %/            Z_N          /%
  %/*************************/%
 
-% (1)-a: control input integral-> if we can get the motor angular
-% accelerate
-%if i == 1
-%    Z_N = record_M(1,:)'*dt;
-%else
-%    for N= 1:i
-%        CI_temp = (record_M(N,:)'*dt); %CI is 3X1 matrix  
-%        CI = CI + CI_temp;
- %   end
- %  Z_N = [Z_N;CI]; %Z_N is 3Nx1 matrix, in here,CI should be transport.
-%end
-
-%(1)-b control input integral-> if we can't get the motor angular
-% accelerate
 if i == 1
     Z_N = (record_m(1,:)'+(record_Coriolis(1,:)'*dt));
 else
@@ -210,9 +186,7 @@ else
         CI_temp = (record_m(N,:)'+(record_Coriolis(N,:)'*dt)); %CI is 3X1 matrix  
         CI = CI + CI_temp;
     end
-    
-
-   Z_N = [Z_N;CI]; %Z_N is 3Nx1 matrix, in here,CI should be transport.
+    Z_N =CI ; %Z_N is 3Nx1 matrix, in here,CI should be transport.
 end
 
 
@@ -224,8 +198,19 @@ CF = zeros(3,6);
 CI = [0,0,0]';
 
 % using least square to estimate X
- X_hat = inv(Psi_N'*Psi_N)*Psi_N'*Z_N;
 
+if i < 3
+ X_hat = inv(Psi_N'*Psi_N)*Psi_N'*Z_N;
+ X_hat_prev = X_hat;
+else
+  % Gain Calculation   
+  K_N =  P_N_prev*Psi_N'*inv(eye(3)+Psi_N*P_N_prev*Psi_N');
+  % Covariance Update
+  X_hat =  X_hat_prev + K_N*(Z_N-Psi_N*X_hat_prev);
+  X_hat_prev = X_hat;
+  P_N = (P_N_prev - (K_N*Psi_N*P_N_prev));
+  P_N_prev = P_N;
+end
  J_hat = X_hat(1:6,:);
  
  r_CM_hat = X_hat(7:9,:);
