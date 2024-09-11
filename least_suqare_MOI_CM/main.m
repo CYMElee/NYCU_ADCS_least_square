@@ -5,7 +5,7 @@ clear;clc;
 addpath("../");
 Init_parameters;
 % Simulation time setting
-t = [1:1:500];
+t = [1:1:3000];
 dt = 0.01;
 
 % array for recoding the state (for plot)
@@ -68,7 +68,7 @@ for i=1:length(t)
 
     %else
     if  abs(r(3)) < 0.0872 && abs(r(2)) < 0.0872
-        M_p = 2*[sin((2*pi*i*dt)/5);cos((2*pi*i*dt)/5);-sin((2*pi*i*dt)/5)];
+        M_p = 0.7*[sin((2*pi*i*dt)/5);cos((2*pi*i*dt)/5);-sin((2*pi*i*dt)/5)];
        
     else
         M_p = -0.5*(((alpha_hat)+alpha_4*eye(3))*Gp + Gamma*(1-alpha_4)*eye(3))*alpha-Gr*omega_ab;
@@ -199,7 +199,7 @@ CI = [0,0,0]';
 
 % using least square to estimate X
 
-if i == 1
+if i < 3
  X_hat = inv(Psi_N'*Psi_N)*Psi_N'*Z_N;
  X_hat_prev = X_hat;
  x_init = X_hat;
