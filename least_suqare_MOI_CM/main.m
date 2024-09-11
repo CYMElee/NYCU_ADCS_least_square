@@ -225,7 +225,12 @@ CI = [0,0,0]';
 
 % using least square to estimate X
  X_hat = inv(Psi_N'*Psi_N)*Psi_N'*Z_N;
+ if i ==1
+  x_init = X_hat;
+ else
 
+ end
+ 
  J_hat = X_hat(1:6,:);
  
  r_CM_hat = X_hat(7:9,:);
