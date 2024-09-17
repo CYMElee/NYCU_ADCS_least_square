@@ -79,6 +79,19 @@ for i=1:length(t)
     M = [M_p;0];
     %% using A.B desire M to get R.W generate M
     omega_dot_mo = -(inv(H_w)/J_RW_testbed)*M;
+
+    % restriction the R.W torque
+
+    for m=1:4
+        if (J_RW_testbed*omega_dot_mo(m)>1.7794)
+            omega_dot_mo(m)= 1.7794/J_RW_testbed;
+        end
+        if (J_RW_testbed*omega_dot_mo(m)<-1.7794)
+            omega_dot_mo(m)= -1.7794/J_RW_testbed;
+        end
+    end
+
+
     omega_mo = omega_mo_prev + omega_dot_mo*dt;
     record_m(i,:) = -(A_w*J_RW_testbed*(omega_mo-omega_mo_prev ));
     omega_mo_prev = omega_mo; 
@@ -87,6 +100,8 @@ for i=1:length(t)
     % using R.C as momentum exchange devices.
     record_M(i,:) = - A_w*J_RW_testbed*omega_dot_mo -cross(omega_ab_prev,A_w*J_RW_testbed*omega_mo);
     record_Coriolis(i,:) = -cross(omega_ab_prev,A_w*J_RW_testbed*omega_mo);
+    
+   
 
 
     record_TOR_TRUE(i,:) =- A_w*J_RW_testbed*omega_dot_mo -cross(omega_ab_prev,A_w*J_RW_testbed*omega_mo);
