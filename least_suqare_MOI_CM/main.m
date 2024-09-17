@@ -67,8 +67,8 @@ for i=1:length(t)
     [alpha_hat] = hat_map(alpha);
 
     %else
-    if  abs(r(3)) < 0.0872 && abs(r(2)) < 0.0872
-        M_p = 0.7*[sin((2*pi*i*dt)/5);cos((2*pi*i*dt)/5);-sin((2*pi*i*dt)/5)];
+    if  abs(r(3)) < 0.017 && abs(r(2)) < 0.017
+        M_p = 0.05*[sin((i*dt)/10);cos((i*dt)/10);-sin((i*dt)/10)];
        
     else
         M_p = -0.5*(((alpha_hat)+alpha_4*eye(3))*Gp + Gamma*(1-alpha_4)*eye(3))*alpha-Gr*omega_ab;
@@ -78,6 +78,15 @@ for i=1:length(t)
     M = [M_p;0];
     %% using A.B desire M to get R.W generate M
     omega_dot_mo = -(inv(H_w)/J_RW_testbed)*M;
+
+   % for m=1:4
+       % if((J_RW_testbed*omega_dot_mo(m))>0.470)
+         %   omega_dot_mo(m)=157.11;
+       % elseif ((J_RW_testbed*omega_dot_mo(m))<-0.470)
+          %  omega_dot_mo(m)=-157.11;
+       % end
+    %end
+
     omega_mo = omega_mo_prev + omega_dot_mo*dt;
     record_m(i,:) = -(A_w*J_RW_testbed*(omega_mo-omega_mo_prev ));
     omega_mo_prev = omega_mo; 
@@ -124,7 +133,6 @@ for i=1:length(t)
     end 
     q0 = Rq;
 
-   
     r = quat2eul(Rq.');
 
 

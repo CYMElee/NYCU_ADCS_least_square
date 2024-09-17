@@ -4,16 +4,16 @@
 clc; clear;
 %% Plant parameters %
 % The wheel's moment of inertia include the roter and wheel.
-J_RW_testbed = 2.27373e-4; %(kg*m^2)
+J_RW_testbed = 2.9915e-3; %(kg*m^2)
 % All of the body frame's moment of inertia
-J_AB_testbed = [5.47 0 0;...
-                0 5.47 0;...
-                0 0 5.47];
+J_AB_testbed = [7.19 0 0;...
+                0 7.19 0;...
+                0 0 7.19];
 
 
 
 %gravitational acceleration
-g = 9.81; %kg/m^2
+g = -9.81; %kg/m^2
 g_body = [0,0,0]'; %3x1 matrix
 % The direction consine matrix(DCM) from RWs to Body frame
 A_w = [1/2 -1/2 -1/2 1/2;
@@ -57,10 +57,10 @@ GF =[0,0,0];
 CF =zeros(3,6); 
 CI = [0,0,0]';
 % Real values
-m_sys = 60.56; %units:kg
+m_sys = 74.51; %units:kg
 r_CM = [0.001;0.002;0.003];
 r_CMXM = m_sys*r_CM ;
-J_MOI = [5.47,5.47,5.47]';
+J_MOI = [7.19,7.19,7.19]';
 J_POI = [0,0,0]';
 
 %Estimate values
@@ -68,24 +68,24 @@ r_CM_hat  = [0;0;0];
 J_hat = [0;0;0;0;0;0];
 
 % Robust control control gains Gp Gr Gamma
-Gp = [5,0,0; ...
-      0,5,0; ...
-      0,0,10];
+Gp = [20,0,0; ...
+      0,20,0; ...
+      0,0,25];
 
-Gr = [5,0,0; ...
-      0,5,0; ...
-      0,0,5];
+Gr = [20,0,0; ...
+      0,20,0; ...
+      0,0,20];
 
-Gamma = 20;
+Gamma = 15;
 
 
 % param for RLS
 
 %covenance matrix
 
-P_init = 10000*eye(9);
-P_N_prev =  10000*eye(9);
-Lambda = 10000;
+P_init = 5000*eye(9);
+P_N_prev =  5000*eye(9);
+Lambda = 50;
 
 
 
