@@ -8,7 +8,7 @@ J_RW_testbed = 2.9915e-3; %(kg*m^2)
 % All of the body frame's moment of inertia
 J_AB_testbed = [7.19 0 0;...
                 0 7.19 0;...
-                0 0 7.19];
+                0 0 7.52];
 
 
 
@@ -60,7 +60,7 @@ CI = [0,0,0]';
 m_sys = 74.51; %units:kg
 r_CM = [0.001;0.002;0.003];
 r_CMXM = m_sys*r_CM ;
-J_MOI = [7.19,7.19,7.19]';
+J_MOI = [7.19,7.19,7.52]';
 J_POI = [0,0,0]';
 
 %Estimate values
@@ -68,23 +68,23 @@ r_CM_hat  = [0;0;0];
 J_hat = [0;0;0;0;0;0];
 
 % Robust control control gains Gp Gr Gamma
-Gp = [20,0,0; ...
-      0,20,0; ...
-      0,0,25];
+Gp = [25.2,0,0; ...
+      0,25.2,0; ...
+      0,0,28.8];
 
 Gr = [20,0,0; ...
       0,20,0; ...
-      0,0,20];
+      0,0,32];
 
-Gamma = 15;
+Gamma = 20;
 
 
 % param for RLS
 
 %covenance matrix
 
-P_init = 5000*eye(9);
-P_N_prev =  5000*eye(9);
+P_init = 1500000*eye(9);
+P_N_prev = 1500000*eye(9);
 Lambda = 50;
 
 
