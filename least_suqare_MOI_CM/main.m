@@ -5,8 +5,9 @@ clear;clc;
 addpath("../");
 Init_parameters;
 % Simulation time setting
-t = [1:1:8000];
+t = [1:1:1000];
 dt = 0.01;
+p=0;
 
 % array for recoding the state (for plot)
 record_R = zeros(length(t),3);
@@ -72,44 +73,62 @@ for i=1:length(t)
     [alpha_hat] = hat_map(alpha);
 
     %else
-    if  abs(r(3)) < 0.0174 && abs(r(2)) < 0.0174
-        M_p = 5*[sin((2*pi*i*dt)/5);cos((2*pi*i*dt)/5);-sin((2*pi*i*dt)/5)];
+    %if  abs(r(3)) < 0.0174 && abs(r(2)) < 0.0174
+       % M_p = 2*[-sin(2*pi*i*dt);-cos(2*pi*i*dt);sin(2*pi*i*dt)];
+        %M_p = 2*[0;0;0];
        
-    else
-        M_p = -0.5*(((alpha_hat)+alpha_4*eye(3))*Gp + Gamma*(1-alpha_4)*eye(3))*alpha-Gr*omega_ab;
-    end
+    %else
+        M_p = -0.5*(((alpha_hat)+alpha_4*eye(3))*Gp + Gamma*(1-alpha_4)*eye(3))*alpha-Gr*omega_ab; 
+    %end
     %record_M(i,:) = M_p';
     record_TOR_CMD(i,:)= M_p';
     M = [M_p;0];
     %% using A.B desire M to get R.W generate M
     omega_dot_mo = -(inv(H_w)/J_RW_testbed)*M;
 
-    for m=1:4
-        if (J_RW_testbed*omega_dot_mo(m)>1.7794)
-            omega_dot_mo(m)= 1.7794/J_RW_testbed;
-            if((omega_dot_mo(m)*J_RW_testbed)>0 && omega_mo_prev(m)>=592)
-               omega_dot_mo(m)=0; 
-            end
-        end
-        if (J_RW_testbed*omega_dot_mo(m)<-1.7794)
-            omega_dot_mo(m)= -1.7794/J_RW_testbed;
-            if((omega_dot_mo(m)*J_RW_testbed)<0 && omega_mo_prev(m)<=-592)
-               omega_dot_mo(m)=0; 
-            end
-        end
-    end
+  %  for m=1:4
+       % if (J_RW_testbed*omega_dot_mo(m)>1.7794)
+           % omega_dot_mo(m)= 1.7794/J_RW_testbed;
+           % if((omega_dot_mo(m)*J_RW_testbed)>0 && omega_mo_prev(m)>=592)
+             %  omega_dot_mo(m)=0; 
+          %  end
+        %end
+       % if (J_RW_testbed*omega_dot_mo(m)<-1.7794)
+           % omega_dot_mo(m)= -1.7794/J_RW_testbed;
+            %if((omega_dot_mo(m)*J_RW_testbed)<0 && omega_mo_prev(m)<=-592)
+             %  omega_dot_mo(m)=0; 
+           % end
+        %end
+    %end
+
+    %if  abs(r(3)) < 0.087 && abs(r(2)) < 0.087
+        %for m=1:4
+           % if omega_mo_prev(m)>=592  
+             %  omega_dot_mo(m) = -1.7794/J_RW_testbed;
+            %end
+            %if omega_mo_prev(m)<-592
+             %   omega_dot_mo(m) = 1.7794/J_RW_testbed;
+            %end 
+        %end
+   % end
+
     record_MOT_torque(i,:)=omega_dot_mo'*J_RW_testbed;
 
     omega_mo = omega_mo_prev + omega_dot_mo*dt;
-    %constrain the r.w rpm
-    for m=1:4
-        if (omega_mo(m)>592)
-            omega_mo(m)= 592;
-        end
-        if (omega_mo(m)<-592)
-            omega_mo(m)= -592;
-        end
-    end
+%    constrain the r.w rpm
+    %for m=1:4
+       % if (omega_mo(m)>592)
+         %   omega_mo(m)= 592;
+        %end
+        % if (omega_mo(m)<-592)
+         %   omega_mo(m)= -592;
+      %  end
+   %end
+
+
+
+
+
     record_MOT_omega(i,:)=omega_mo';
     record_m(i,:) = -(A_w*J_RW_testbed*(omega_mo-omega_mo_prev ));
     omega_mo_prev = omega_mo;
@@ -159,9 +178,6 @@ for i=1:length(t)
 
    
     r = quat2eul(Rq.');
-
-
-    
 
 
     record_R(i,:) =[r(3),r(2),r(1)];
@@ -273,7 +289,7 @@ CI = [0,0,0]';
  record_MOI_TRUE(i,:) =J_MOI;
  record_POI_TRUE(i,:) = J_POI;
  record_CM_TRUE(i,:) = r_CMXM;
-
+ p=p+1;
  end
 
 %% Plot
@@ -478,6 +494,62 @@ ylabel("Mz", 'FontSize',13);
 legend({'Mz_truth', 'Mz_command'}, 'Interpreter', 'latex');
 sgtitle('Torque Generate by R.W(z)', 'FontSize', 16);
 
+
+
+
+
+
+
+
+%R.W omega plot
+
+% Omega plot
+
+figure;
+
+tiledlayout(4, 1);
+
+ax19 = nexttile;
+plot(ax19, ...  
+          t, record_MOT_omega(1:length(record_MOT_omega),1),'-'...
+          );
+%title("Roll", FontSize=14);
+xlabel("Time(10ms)", 'FontSize',13);
+ylabel("\Omega", 'FontSize',13);
+legend("1st");
+
+ax20 = nexttile;
+plot(ax20, ...  
+          t, record_MOT_omega(1:length(record_MOT_omega),2),'-'...
+          );
+%title("Pitch", FontSize=14);
+xlabel("Time(10ms)", 'FontSize',13);
+ylabel("\Omega", 'FontSize',13);
+legend("2nd");
+
+
+ax21 = nexttile;
+
+plot(ax21, ...  
+          t, record_MOT_omega(1:length(record_MOT_omega),3),'-'...
+          );
+%title("Yaw", FontSize=14);
+xlabel("Time(10ms)", 'FontSize',13);
+ylabel("\Omega", 'FontSize',13);
+legend("3rd");
+
+
+ax22 = nexttile;
+
+plot(ax22, ...  
+          t, record_MOT_omega(1:length(record_MOT_omega),4),'-'...
+          );
+%title("Yaw", FontSize=14);
+xlabel("Time(10ms)", 'FontSize',13);
+ylabel("\Omega", 'FontSize',13);
+legend("4th");
+
+sgtitle('R.W angular velocity (rad/sec)', 'FontSize', 16);
 
 %     %error
 
