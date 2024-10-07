@@ -5,7 +5,7 @@ clear;clc;
 addpath("../");
 Init_parameters;
 % Simulation time setting
-t = [1:1:1000];
+t = [1:1:5000];
 dt = 0.01;
 p=0;
 
@@ -73,13 +73,13 @@ for i=1:length(t)
     [alpha_hat] = hat_map(alpha);
 
     %else
-    %if  abs(r(3)) < 0.0174 && abs(r(2)) < 0.0174
-       % M_p = 2*[-sin(2*pi*i*dt);-cos(2*pi*i*dt);sin(2*pi*i*dt)];
+    if  abs(r(3)) < 0.087 && abs(r(2)) < 0.087
+        M_p = 2*[-sin(2*pi*i*dt);-cos(2*pi*i*dt);sin(2*pi*i*dt)];
         %M_p = 2*[0;0;0];
        
-    %else
+    else
         M_p = -0.5*(((alpha_hat)+alpha_4*eye(3))*Gp + Gamma*(1-alpha_4)*eye(3))*alpha-Gr*omega_ab; 
-    %end
+    end
     %record_M(i,:) = M_p';
     record_TOR_CMD(i,:)= M_p';
     M = [M_p;0];
