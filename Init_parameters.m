@@ -58,7 +58,7 @@ CF =zeros(3,6);
 CI = [0,0,0]';
 % Real values
 m_sys = 74.94; %units:kg
-r_CM = [0.001;0.002;0.003];
+r_CM = [0.000;0.01;0];
 r_CMXM = m_sys*r_CM ;
 J_MOI = [7.24,7.28,7.37]';
 J_POI = [0,0,0]';
