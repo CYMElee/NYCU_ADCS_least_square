@@ -4,11 +4,11 @@
 clc; clear;
 %% Plant parameters %
 % The wheel's moment of inertia include the roter and wheel.
-J_RW_testbed = 2.9915e-3; %(kg*m^2)
+J_RW_testbed = 2.9788e-3; %(kg*m^2)
 % All of the body frame's moment of inertia
-J_AB_testbed = [7.24 0 0;...
-                0 7.28 0;...
-                0 0 7.37];
+J_AB_testbed = [7.13 0 0;...
+                0 7.09 0;...
+                0 0 7.13];
 
 
 
@@ -57,10 +57,10 @@ GF =[0,0,0];
 CF =zeros(3,6); 
 CI = [0,0,0]';
 % Real values
-m_sys = 74.94; %units:kg
+m_sys = 74.33; %units:kg
 r_CM = [0.001;0.002;0.003];
 r_CMXM = m_sys*r_CM ;
-J_MOI = [7.24,7.28,7.37]';
+J_MOI = [7.13,7.09,7.13]';
 J_POI = [0,0,0]';
 
 %Estimate values
@@ -68,15 +68,15 @@ r_CM_hat  = [0;0;0];
 J_hat = [0;0;0;0;0;0];
 
 % Robust control control gains Gp Gr Gamma
-Gp = [750,0,0; ...
-      0,800,0; ...
-      0,0,400];
+Gp = [25.2,0,0; ...
+      0,25.2,0; ...
+      0,0,28.8];
 
-Gr = [600,0,0; ...
-      0,550,0; ...
-      0,0,250];
+Gr = [20,0,0; ...
+      0,20,0; ...
+      0,0,32];
 
-Gamma = 700;
+Gamma = 0.3;
 
 
 

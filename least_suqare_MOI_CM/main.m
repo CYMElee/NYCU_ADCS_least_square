@@ -5,7 +5,7 @@ clear;clc;
 addpath("../");
 Init_parameters;
 % Simulation time setting
-t = [1:1:2000];
+t = [1:1:1500];
 dt = 0.01;
 p=0;
 
@@ -73,13 +73,13 @@ for i=1:length(t)
     [alpha_hat] = hat_map(alpha);
 
     %else
-    %if  abs(r(3)) < 0.0174 && abs(r(2)) < 0.0174
-        %M_p = 2*[-sin(2*pi*i*dt);-cos(2*pi*i*dt);sin(2*pi*i*dt)];
+    if  abs(r(3)) < 0.087 && abs(r(2)) < 0.087
+        M_p = 2*[-sin(2*pi*i*dt);-cos(2*pi*i*dt);sin(2*pi*i*dt)];
         %M_p = 2*[0;0;0];
        
-    %else
+    else
         M_p = -0.5*(((alpha_hat)+alpha_4*eye(3))*Gp + Gamma*(1-alpha_4)*eye(3))*alpha-Gr*omega_ab; 
-    %end
+    end
     %record_M(i,:) = M_p';
     record_TOR_CMD(i,:)= M_p';
     M = [M_p;0];
@@ -87,14 +87,14 @@ for i=1:length(t)
     omega_dot_mo = -(inv(H_w)/J_RW_testbed)*M;
 
     for m=1:4
-        if (J_RW_testbed*omega_dot_mo(m)>1.7794)
-            omega_dot_mo(m)= 1.7794/J_RW_testbed;
+        if (J_RW_testbed*omega_dot_mo(m)>0.470)
+            omega_dot_mo(m)= 0.470/J_RW_testbed;
             if((omega_dot_mo(m)*J_RW_testbed)>0 && omega_mo_prev(m)>=592)
                omega_dot_mo(m)=0; 
             end
         end
-        if (J_RW_testbed*omega_dot_mo(m)<-1.7794)
-            omega_dot_mo(m)= -1.7794/J_RW_testbed;
+        if (J_RW_testbed*omega_dot_mo(m)<-0.470)
+            omega_dot_mo(m)= -0.470/J_RW_testbed;
             if((omega_dot_mo(m)*J_RW_testbed)<0 && omega_mo_prev(m)<=-592)
                omega_dot_mo(m)=0; 
             end
@@ -102,10 +102,10 @@ for i=1:length(t)
     end
 
     %if  abs(r(3)) < 0.087 && abs(r(2)) < 0.087
-        %for m=1:4
+       % for m=1:4
            % if omega_mo_prev(m)>=592  
-             %  omega_dot_mo(m) = -1.7794/J_RW_testbed;
-            %end
+              % omega_dot_mo(m) = -1.7794/J_RW_testbed;
+           % end
             %if omega_mo_prev(m)<-592
              %   omega_dot_mo(m) = 1.7794/J_RW_testbed;
             %end 
@@ -119,9 +119,9 @@ for i=1:length(t)
     for m=1:4
         if (omega_mo(m)>592)
             omega_mo(m)= 592;
-        end
-         if (omega_mo(m)<-592)
-            omega_mo(m)= -592;
+       end
+        if (omega_mo(m)<-592)
+           omega_mo(m)= -592;
         end
    end
 
